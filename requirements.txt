@@ -21,13 +21,13 @@ google-pasta==0.2.0
 grpcio==1.48.2
 h5py==3.9.0
 idna==3.4
-keras~=2.14.0
+keras
 Keras-Preprocessing==1.1.2
 Markdown==3.4.1
 MarkupSafe==2.1.1
 mkl-service==2.4.0
 multidict==6.0.2
-numpy~=1.24.2
+numpy==1.23.5
 oauthlib==3.2.2
 opt-einsum==3.3.0
 packaging==23.1
@@ -57,4 +57,3 @@ Werkzeug==2.2.3
 wheel==0.41.2
 wrapt==1.14.1
 yarl==1.8.1
-opencv-python~=4.8.1.78

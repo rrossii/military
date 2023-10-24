@@ -9,6 +9,10 @@
  ```
     conda install -c conda-forge opencv
 ```
+* install scikit-learn
+```
+    conda install -c anaconda scikit-learn
+```
 
 * activate virtual environment
 ```

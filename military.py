@@ -53,8 +53,8 @@ x_val = []
 y_val = []
 
 for i in range(0, len(train)):
-    x_train.append(train[i][0]) #image
-    y_train.append(train[i][1]) #label
+    x_train.append(train[i][0])  # image
+    y_train.append(train[i][1])  # label
 for i in range(0, len(test)):
     x_test.append(test[i][0])
     y_test.append(test[i][1])
@@ -62,6 +62,11 @@ for i in range(0, len(test)):
 #     x_val.append(val[i][0])
 #     y_val.append(val[i][1])
 
+from sklearn.preprocessing import LabelEncoder
+
+label_encoder = LabelEncoder()
+y_train = label_encoder.fit_transform(y_train)
+y_test = label_encoder.fit_transform(y_test)
 
 x_train = np.array(x_train)
 y_train = np.array(y_train)
@@ -89,7 +94,7 @@ base_model.summary()
 
 model = Model(inputs=base_model.input, outputs=predictions)
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-model.fit(x_train, y_train, epochs=3, validation_data=(x_train, y_train))
+model.fit(x_train, y_train, epochs=3, validation_data=(x_test, y_test))
 for img in x_test:
     prediction = model.predict(img)
     print(prediction)
@@ -106,15 +111,15 @@ def vehicleType(img_path):
     pred = model.predict_classes(img)
     return pred
 
+
 img = "dataset/test/other/other_0_1006.jpeg"
 classOfImage = vehicleType(img)
 
 print(f"{img} class is {classOfImage}")
 
-
 z = model.predict_classes(x_train) == y_train
-scores_train = sum(z+0) / len(z)
+scores_train = sum(z + 0) / len(z)
 z = model.predict_classes(x_test) == y_test
-scores_test = sum(z+0) / len(z)
+scores_test = sum(z + 0) / len(z)
 
 print('Train DataSet accuracy: {: .1%}'.format(scores_train), 'Test DataSet accuracy: {: .1%}'.format(scores_test))

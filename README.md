@@ -1,11 +1,14 @@
 ### Run Program
 
-* make script executable
-```
-    chmod +x install_and_run.sh
-```
-
-* run script
+* run installation script
  ```
-    ./install_and_run.sh
+    ./install.sh
+```
+* run program 
+ ```
+    ./run.sh
+```
+* if environment is not activated run
+ ```
+    conda activate military-klym
 ```

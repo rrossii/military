@@ -1,20 +1,11 @@
 ### Run Program
 
-* create environment and install dependencies
+* make script executable
 ```
-    conda create --name <ENV_NAME> --file requirements.txt -c conda-forge
+    chmod +x install_and_run.sh
 ```
 
-* install opencv separately
+* run script
  ```
-    conda install -c conda-forge opencv
-```
-* install scikit-learn
-```
-    conda install -c anaconda scikit-learn
-```
-
-* activate virtual environment
-```
-    conda activate <ENV_NAME>
+    ./install_and_run.sh
 ```

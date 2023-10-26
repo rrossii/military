@@ -1,13 +1,13 @@
-import cv2 as cv
-
-from keras.layers import Dense, Flatten, Dropout
-from keras.models import Model
-
 from glob import glob
 
+import cv2 as cv
 import numpy as np
+from keras.layers import Dense, Flatten, Dropout
+from keras.models import Model
+from keras import losses
 
 IMM_SIZE = 224
+fitting_save = True
 
 
 def get_data(folder):
@@ -18,7 +18,7 @@ def get_data(folder):
     for img in images:
         image = cv.imread(img)
         if image is not None:
-            image = cv.resize(image, (224, 224))
+            image = cv.resize(image, (IMM_SIZE, IMM_SIZE))
         if image.shape[2] == 1:
             image = cv.cvtColor(image, cv.COLOR_GRAY2BGR)
 
@@ -39,18 +39,11 @@ train_millitary = get_data(folder_military)
 train_other = get_data(folder_other)
 train = train_millitary + train_other
 
-# folder_military = "dataset/validation/millitary"
-# folder_other = "dataset/validation/other"
-# val_millitary = get_data(folder_military)
-# val_other = get_data(folder_other)
-# val = val_millitary + val_other
 
 x_train = []
 y_train = []
 x_test = []
 y_test = []
-x_val = []
-y_val = []
 
 for i in range(0, len(train)):
     x_train.append(train[i][0])  # image
@@ -58,9 +51,7 @@ for i in range(0, len(train)):
 for i in range(0, len(test)):
     x_test.append(test[i][0])
     y_test.append(test[i][1])
-# for i in range(0, len(val)):
-#     x_val.append(val[i][0])
-#     y_val.append(val[i][1])
+
 
 from sklearn.preprocessing import LabelEncoder
 
@@ -68,16 +59,24 @@ label_encoder = LabelEncoder()
 y_train = label_encoder.fit_transform(y_train)
 y_test = label_encoder.fit_transform(y_test)
 
-x_train = np.array(x_train)
-y_train = np.array(y_train)
-x_test = np.array(x_test)
-y_test = np.array(y_test)
-# x_val = np.array(x_val)
-# y_val = np.array(y_val)
 
+# normalizing images
+x_train = np.array(x_train) / 255.0
+x_test = np.array(x_test) / 255.0
+
+# reshaping input images
+x_train = x_train.reshape(-1, IMM_SIZE, IMM_SIZE, 1)
+x_test = x_test.reshape(-1, IMM_SIZE, IMM_SIZE, 1)
+
+
+y_train = np.array(y_train)
+y_test = np.array(y_test)
+
+
+# base model
 from keras.applications import VGG16
 
-base_model = VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+base_model = VGG16(weights='imagenet', include_top=False, input_shape=(IMM_SIZE, IMM_SIZE, 3))
 
 x = base_model.output
 x = Flatten()(x)
@@ -89,12 +88,29 @@ predictions = Dense(1, activation='sigmoid')(x)
 
 for layer in base_model.layers:
     layer.trainable = False
-
 base_model.summary()
 
+
+# our model
 model = Model(inputs=base_model.input, outputs=predictions)
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-model.fit(x_train, y_train, epochs=3, validation_data=(x_test, y_test))
+model.compile(optimizer='adam', loss=losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+history = model.fit(x_train, y_train, epochs=3, validation_data=(x_test, y_test), shuffle=True)
+
+# save model
+import pickle
+
+if fitting_save:
+    model_json = model.to_json()
+    with open("model.json", "w") as file:
+        file.write(model_json)
+    model.save_weights("model.h5")
+    print("Saved model to disk")
+
+    # with open('history.pickle', 'wb') as f:
+    #     pickle.dump(history.history, f)
+    # with open('lab.pickle', 'wb') as f:
+    #     pickle.dump(lab, f)
+
 for img in x_test:
     prediction = model.predict(img)
     print(prediction)
@@ -117,6 +133,8 @@ classOfImage = vehicleType(img)
 
 print(f"{img} class is {classOfImage}")
 
+
+# accuracy
 z = model.predict_classes(x_train) == y_train
 scores_train = sum(z + 0) / len(z)
 z = model.predict_classes(x_test) == y_test
